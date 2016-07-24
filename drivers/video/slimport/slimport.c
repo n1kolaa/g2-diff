@@ -50,11 +50,11 @@ int external_block_en;
 /* to access global platform data */
 static struct anx7808_platform_data *g_pdata;
 
-/* LGE_CHANGE,
- * to apply High voltage to HDMI_SWITCH_EN
- * which can select MHL or SlimPort on LGPS11
- * this feature should be enable only when board has hdmi switch chip.
- * 2012-10-31, jihyun.seong@lge.com
+/*            
+                                          
+                                             
+                                                                      
+                                   
  */
 /* #define USE_HDMI_SWITCH */
 
@@ -85,21 +85,14 @@ struct msm_hdmi_slimport_ops *hdmi_slimport_ops;
 void slimport_set_hdmi_hpd(int on)
 {
 	int rc = 0;
-	static int hdmi_hpd_flag = 0;
 
 	pr_info("%s %s:+\n", LOG_TAG, __func__);
 
-	if (on && hdmi_hpd_flag != 1) {
-		hdmi_hpd_flag = 1;
+	if (on) {
 		rc = hdmi_slimport_ops->set_upstream_hpd(g_pdata->hdmi_pdev, 1);
 		pr_info("%s %s: hpd on = %s\n", LOG_TAG, __func__,
 				rc ? "failed" : "passed");
-		if (rc) {
-			msleep(2000);
-			rc = hdmi_slimport_ops->set_upstream_hpd(g_pdata->hdmi_pdev, 1);
-		}
-	} else if (!on && hdmi_hpd_flag != 0) {
-		hdmi_hpd_flag = 0;
+	} else {
 		rc = hdmi_slimport_ops->set_upstream_hpd(g_pdata->hdmi_pdev, 0);
 		pr_info("%s %s: hpd off = %s\n", LOG_TAG, __func__,
 				rc ? "failed" : "passed");
@@ -143,9 +136,9 @@ bool slimport_is_connected(void)
 }
 EXPORT_SYMBOL(slimport_is_connected);
 
-/* LGE_CHANGE,
- * power control
- * 2012-10-17, jihyun.seong@lge.com
+/*            
+                
+                                   
  */
 static int slimport_avdd_power(unsigned int onoff)
 {
@@ -411,14 +404,6 @@ static ssize_t anx7808_write_reg_store(struct device *dev, struct device_attribu
 	return count;
 }
 
-static ssize_t slimport_sysfs_rda_hdmi_vga(struct device *dev, struct device_attribute *attr,
-	       char *buf)
-{
-	int ret;
-	ret = is_slimport_vga();
-	return sprintf(buf, "%d", ret);
-}
-
 #ifdef SP_REGISTER_SET_TEST /* Slimport test */
 /*sysfs read interface*/
 static ssize_t ctrl_reg0_show(struct device *dev, struct device_attribute *attr,
@@ -665,7 +650,6 @@ static struct device_attribute slimport_device_attrs[] = {
 	__ATTR(rev_check, S_IRUGO | S_IWUSR, NULL, slimport_rev_check_store),
 	__ATTR(hdcp, S_IRUGO | S_IWUSR, sp_hdcp_feature_show, sp_hdcp_feature_store),
 	__ATTR(hdcp_switch, S_IRUGO | S_IWUSR, sp_external_block_show, sp_external_block_store),
-	__ATTR(hdmi_vga, S_IRUGO | S_IWUSR, slimport_sysfs_rda_hdmi_vga, NULL),
 	__ATTR(anx7730, S_IRUGO | S_IWUSR, NULL, anx7730_write_reg_store),
 	__ATTR(anx7808, S_IRUGO | S_IWUSR, NULL, anx7808_write_reg_store),
 #ifdef SP_REGISTER_SET_TEST /* slimport test */
@@ -1161,9 +1145,9 @@ static void anx7808_work_func(struct work_struct *work)
 #endif
 }
 
-/* LGE_CHANGE,
- * add device tree parsing functions
- * 2012-10-17, jihyun.seong@lge.com
+/*            
+                                    
+                                   
  */
 #ifdef CONFIG_OF
 int anx7808_regulator_configure(

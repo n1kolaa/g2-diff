@@ -455,7 +455,6 @@ typedef struct dhd_info {
 	htsf_t  htsf;
 #endif
 	wait_queue_head_t ioctl_resp_wait;
-	wait_queue_head_t d3ack_wait;
 	uint32	default_wd_interval;
 
 	struct timer_list timer;
@@ -4292,7 +4291,6 @@ dhd_stop(struct net_device *net)
 			if ((dhd->dhd_state & DHD_ATTACH_STATE_ADD_IF) &&
 				(dhd->dhd_state & DHD_ATTACH_STATE_CFG80211)) {
 				int i;
-				dhd_if_t *ifp;
 
 #if defined(CUSTOMER_HW4) && defined(WL_CFG80211_P2P_DEV_IF)
 				wl_cfg80211_del_p2p_wdev();
@@ -4301,13 +4299,6 @@ dhd_stop(struct net_device *net)
 				dhd_net_if_lock_local(dhd);
 				for (i = 1; i < DHD_MAX_IFS; i++)
 					dhd_remove_if(&dhd->pub, i, FALSE);
-
-				ifp = dhd->iflist[0];
-				ASSERT(ifp && ifp->net);
-				if (ifp && ifp->net) {
-					dhd_if_del_sta_list(ifp);
-				}
-
 				dhd_net_if_unlock_local(dhd);
 			}
 		}
@@ -5095,7 +5086,6 @@ dhd_attach(osl_t *osh, struct dhd_bus *bus, uint bus_hdrlen)
 
 	/* Initialize other structure content */
 	init_waitqueue_head(&dhd->ioctl_resp_wait);
-	init_waitqueue_head(&dhd->d3ack_wait);
 	init_waitqueue_head(&dhd->ctrl_wait);
 
 	/* Initialize the spinlocks */
@@ -5937,6 +5927,7 @@ static int dhd_preinit_proc(dhd_pub_t *dhd, int ifidx, char *name, char *value)
 		struct ether_addr ea;
 		char buf[32];
 		uint iovlen;
+		int ret;
 
 		bcm_ether_atoe(value, &ea);
 
@@ -7936,40 +7927,6 @@ dhd_os_ioctl_resp_wake(dhd_pub_t *pub)
 	dhd_info_t *dhd = (dhd_info_t *)(pub->info);
 
 	wake_up(&dhd->ioctl_resp_wait);
-	return 0;
-}
-
-int
-dhd_os_d3ack_wait(dhd_pub_t *pub, uint *condition, bool *pending)
-{
-	dhd_info_t * dhd = (dhd_info_t *)(pub->info);
-	int timeout;
-
-	/* Convert timeout in millsecond to jiffies */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 27))
-	timeout = msecs_to_jiffies(dhd_ioctl_timeout_msec);
-#else
-	timeout = dhd_ioctl_timeout_msec * HZ / 1000;
-#endif
-#ifdef BCMSLTGT
-	timeout *= htclkratio;
-#endif /* BCMSLTGT */
-
-	DHD_PERIM_UNLOCK(pub);
-
-	timeout = wait_event_timeout(dhd->d3ack_wait, (*condition), timeout);
-
-	DHD_PERIM_LOCK(pub);
-
-	return timeout;
-}
-
-int
-dhd_os_d3ack_wake(dhd_pub_t *pub)
-{
-	dhd_info_t *dhd = (dhd_info_t *)(pub->info);
-
-	wake_up(&dhd->d3ack_wait);
 	return 0;
 }
 

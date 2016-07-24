@@ -19,7 +19,7 @@
 #define LGE_TOUCH_CORE_H
 
 /* #define MT_PROTOCOL_A */
-/* #define LGE_TOUCH_TIME_DEBUG */
+/*                              */
 #include <linux/earlysuspend.h>
 
 #define I2C_SUSPEND_WORKAROUND 1
@@ -358,7 +358,7 @@ struct lge_touch_data {
 	struct delayed_work			work_ime_drumming;
 #endif
 #if defined(CONFIG_FB)
-	struct notifier_block		fb_notif;
+	struct notifier_block notif;
 #elif defined(CONFIG_HAS_EARLYSUSPEND)
 	struct early_suspend		early_suspend;
 #endif

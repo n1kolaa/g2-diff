@@ -46,11 +46,6 @@
 #include <mach/board_lge.h>
 #endif
 
-#ifdef CONFIG_LGE_PM_BATTERY_ID_CHECKER
-#include <linux/power/lge_battery_id.h>
-#include <mach/msm_smsm.h>
-#endif
-
 static DEFINE_MUTEX(l2bw_lock);
 
 static struct clk *cpu_clk[NR_CPUS];
@@ -439,11 +434,6 @@ static int cpufreq_parse_dt(struct device *dev)
 	int ret, len, nf, num_cols = 2, i, j;
 	u32 *data;
 
-#ifdef CONFIG_LGE_PM_BATTERY_ID_CHECKER
-    uint *smem_batt = 0;
-    int IsBattery = 0;
-#endif
-
 #ifdef CONFIG_LGE_LIMIT_FREQ_TABLE
 	enum lge_boot_mode_type boot_mode = lge_get_boot_mode();
 #endif
@@ -451,33 +441,9 @@ static int cpufreq_parse_dt(struct device *dev)
 	if (l2_clk)
 		num_cols++;
 
-#ifdef CONFIG_LGE_PM_BATTERY_ID_CHECKER
-    smem_batt = (uint *)smem_alloc(SMEM_BATT_INFO, sizeof(smem_batt));
-    if (smem_batt == NULL) {
-        pr_err("%s : smem_alloc returns NULL\n",__func__);
-    }
-    else {
-        pr_err("Batt ID from SBL = %d\n", *smem_batt);
-        if (*smem_batt == BATT_ID_DS2704_L ||
-            *smem_batt == BATT_ID_DS2704_C ||
-            *smem_batt == BATT_ID_ISL6296_L ||
-            *smem_batt == BATT_ID_ISL6296_C) {
-            //To Do if Battery is present
-            IsBattery = 1;
-        }
-        else {
-            //To Do if Battery is absent
-            IsBattery = 0;
-        }
-    }
-#endif
-
 #ifdef CONFIG_LGE_LIMIT_FREQ_TABLE
-	if(boot_mode == LGE_BOOT_MODE_FACTORY || boot_mode == LGE_BOOT_MODE_PIFBOOT
-#ifdef CONFIG_LGE_PM_BATTERY_ID_CHECKER
-	   || IsBattery == 0
-#endif
-		) {
+	if(boot_mode == LGE_BOOT_MODE_FACTORY || boot_mode == LGE_BOOT_MODE_FACTORY2 || boot_mode == LGE_BOOT_MODE_FACTORY3 ||
+	   boot_mode == LGE_BOOT_MODE_PIFBOOT || boot_mode == LGE_BOOT_MODE_PIFBOOT2 || boot_mode == LGE_BOOT_MODE_PIFBOOT3) {
 		/* XXX: MSM8974v1 is not considered */
 		/* Parse CPU freq -> L2/Mem BW map table. */
 		if (!of_find_property(dev->of_node, PROP_FACT_TBL, &len))
@@ -505,11 +471,8 @@ static int cpufreq_parse_dt(struct device *dev)
 		return -ENOMEM;
 
 #ifdef CONFIG_LGE_LIMIT_FREQ_TABLE
-	if(boot_mode == LGE_BOOT_MODE_FACTORY || boot_mode == LGE_BOOT_MODE_PIFBOOT
-#ifdef CONFIG_LGE_PM_BATTERY_ID_CHECKER
-	   || IsBattery == 0
-#endif
-		) {
+    if(boot_mode == LGE_BOOT_MODE_FACTORY || boot_mode == LGE_BOOT_MODE_FACTORY2 || boot_mode == LGE_BOOT_MODE_FACTORY3 ||
+		boot_mode == LGE_BOOT_MODE_PIFBOOT || boot_mode == LGE_BOOT_MODE_PIFBOOT2 || boot_mode == LGE_BOOT_MODE_PIFBOOT3) {
 		ret = of_property_read_u32_array(dev->of_node, PROP_FACT_TBL, data, len);
 		if (ret)
 			return ret;

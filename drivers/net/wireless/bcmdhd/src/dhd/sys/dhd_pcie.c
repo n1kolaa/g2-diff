@@ -1400,23 +1400,11 @@ int dhd_bus_rxctl(struct dhd_bus *bus, uchar *msg, uint msglen)
 	else
 		bus->dhd->rx_ctlerrs++;
 
-	if (bus->dhd->rxcnt_timeout >= MAX_CNTL_TX_TIMEOUT) {
-#ifdef SUPPORT_LINKDOWN_RECOVERY
-#ifdef CONFIG_ARCH_MSM
-                bus->islinkdown = TRUE;
-#endif /* CONFIG_ARCH_MSM */
-#endif /* SUPPORT_LINKDOWN_RECOVERY */
+	if (bus->dhd->rxcnt_timeout >= MAX_CNTL_TX_TIMEOUT)
 		return -ETIMEDOUT;
-	}
 
-	if (bus->dhd->dongle_trap_occured) {
-#ifdef SUPPORT_LINKDOWN_RECOVERY
-#ifdef CONFIG_ARCH_MSM
-                bus->islinkdown = TRUE;
-#endif /* CONFIG_ARCH_MSM */
-#endif /* SUPPORT_LINKDOWN_RECOVERY */
+	if (bus->dhd->dongle_trap_occured)
 		return -EREMOTEIO;
-	}
 
 	return rxlen ? (int)rxlen : -EIO;
 
@@ -3360,8 +3348,7 @@ dhdpcie_bus_suspend(struct  dhd_bus *bus, bool state)
 		DHD_OS_WAKE_LOCK_WAIVE(bus->dhd);
 		dhd_os_set_ioctl_resp_timeout(DEFAULT_IOCTL_RESP_TIMEOUT);
 		dhdpcie_send_mb_data(bus, H2D_HOST_D3_INFORM);
-		timeleft = dhd_os_d3ack_wait(bus->dhd, &bus->wait_for_d3_ack, &pending);
-
+		timeleft = dhd_os_ioctl_resp_wait(bus->dhd, &bus->wait_for_d3_ack, &pending);
 		dhd_os_set_ioctl_resp_timeout(IOCTL_RESP_TIMEOUT);
 		DHD_OS_WAKE_LOCK_RESTORE(bus->dhd);
 		if (bus->wait_for_d3_ack) {
@@ -4000,7 +3987,7 @@ dhdpcie_handle_mb_data(dhd_bus_t *bus)
 		DHD_INFO_HW4(("%s D2H_MB_DATA: Received D3 ACK\n", __FUNCTION__));
 		if (!bus->wait_for_d3_ack) {
 			bus->wait_for_d3_ack = 1;
-			dhd_os_d3ack_wake(bus->dhd);
+			dhd_os_ioctl_resp_wake(bus->dhd);
 		}
 	}
 	if (d2h_mb_data & D2H_DEV_FWHALT)  {

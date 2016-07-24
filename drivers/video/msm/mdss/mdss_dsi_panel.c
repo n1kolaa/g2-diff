@@ -308,7 +308,7 @@ static int mdss_dsi_request_gpios(struct mdss_dsi_ctrl_pdata *ctrl_pdata)
 			goto disp_en_gpio_err;
 		}
 	}
-#endif // CONFIG_LGE_MIPI_DZNY_JDI_INCELL_FHD_VIDEO_PANEL
+#endif //                                                
 #ifdef CONFIG_MFD_TPS65132
 	if (ctrl_pdata->num_of_dsv_enable_pin > 1)
 		if (gpio_is_valid(ctrl_pdata->disp_en_gpio2)) {
@@ -560,13 +560,10 @@ gpio_set_value((ctrl_pdata->rst_gpio), 1 );
 		}
 
 		mdelay(10);
-#else
-        gpio_set_value((ctrl_pdata->rst_gpio), 0);
-        gpio_free(ctrl_pdata->rst_gpio);
 		
-#endif // CONFIG_LGE_MIPI_DZNY_JDI_INCELL_FHD_VIDEO_PANEL
-
-
+#endif //                                                
+		gpio_set_value((ctrl_pdata->rst_gpio), 0);
+		gpio_free(ctrl_pdata->rst_gpio);
 #ifdef CONFIG_MACH_LGE
 			mdelay(10);
 #endif

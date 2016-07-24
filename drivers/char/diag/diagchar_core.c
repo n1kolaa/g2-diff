@@ -2148,7 +2148,7 @@ inline void diagfwd_bridge_fn(int type) { }
 
 #ifdef CONFIG_LGE_DIAG_USB_ACCESS_LOCK
 int user_diag_enable;
-#if defined(CONFIG_LGE_DIAG_USB_ACCESS_LOCK) && !defined(CONFIG_MACH_MSM8974_G3_SPR_US) && !defined(CONFIG_MACH_MSM8974_G2_SPR)
+#if defined(CONFIG_LGE_DIAG_USB_ACCESS_LOCK) && !defined(CONFIG_MACH_MSM8974_G3_SPR_US)
 #define DIAG_ENABLE	1
 #define DIAG_DISABLE	0
 #endif
@@ -2178,7 +2178,7 @@ static ssize_t write_diag_enable(struct device *dev,
 	{
 		user_diag_enable = 1;
 	}
-#if defined(CONFIG_LGE_DIAG_USB_ACCESS_LOCK) && !defined(CONFIG_MACH_MSM8974_G3_SPR_US) && !defined(CONFIG_MACH_MSM8974_G2_SPR)
+#if defined(CONFIG_LGE_DIAG_USB_ACCESS_LOCK) && !defined(CONFIG_MACH_MSM8974_G3_SPR_US)
 	if(lge_get_factory_boot()) {
 		printk("[FACTORY] force to diag enable, factory mode\n");
 		user_diag_enable = DIAG_ENABLE;
@@ -2202,7 +2202,7 @@ int lg_diag_create_file(struct platform_device *pdev)
     return ret;
 }
 
-#if defined(CONFIG_LGE_DIAG_USB_ACCESS_LOCK) && !defined(CONFIG_MACH_MSM8974_G3_SPR_US) && !defined(CONFIG_MACH_MSM8974_G2_SPR)
+#if defined(CONFIG_LGE_DIAG_USB_ACCESS_LOCK) && !defined(CONFIG_MACH_MSM8974_G3_SPR_US)
 int get_diag_enable(void)
 {
 	if (lge_get_factory_boot())

@@ -36,8 +36,7 @@ enum I2C_TYPE {
 };
 
 enum PRODUCT_TYPE {
-	FC8300_TUNER        = 8300,
-	FC8300B_TUNER       = 8301
+	FC8300_TUNER        = 8300
 };
 
 extern s32 tuner_ctrl_select(HANDLE handle, DEVICEID devid,

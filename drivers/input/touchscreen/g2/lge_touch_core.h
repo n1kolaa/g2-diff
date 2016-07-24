@@ -19,7 +19,7 @@
 #define LGE_TOUCH_CORE_H
 
 /* #define MT_PROTOCOL_A */
-/* #define LGE_TOUCH_TIME_DEBUG */
+/*                              */
 #include <linux/earlysuspend.h>
 
 #define I2C_SUSPEND_WORKAROUND 1
@@ -189,15 +189,6 @@ enum {
 	TOUCH_VENDOR_LGIT = 0,
 	TOUCH_VENDOR_TPK,
 };
-
-#if defined(CONFIG_MACH_MSM8974_G2_OPEN_COM) || defined(CONFIG_MACH_MSM8974_G2_OPT_AU)
-enum {
-	TOUCH_PANEL_UNKNOWN = 0,
-	TOUCH_PANEL_G1F_LGIT,
-	TOUCH_PANEL_G1F_SSUNTEL,
-	TOUCH_PANEL_G2_LGIT,
-};
-#endif
 
 #if defined(CONFIG_LGE_Z_TOUCHSCREEN)
 enum {

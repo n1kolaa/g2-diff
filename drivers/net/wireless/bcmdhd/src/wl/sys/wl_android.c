@@ -2815,13 +2815,6 @@ wl_android_set_miracast(struct net_device *dev, char *command, int total_len)
 		ret = wl_android_iolist_add(dev, &miracast_resume_list, &config);
 		if (ret)
 			goto resume;
-
-#if defined(BCM4339_CHIP)
-		config.iovar = "phy_watchdog";
-		config.param = 0;
-		ret = wl_android_iolist_add(dev, &miracast_resume_list, &config);
-		DHD_INFO(("%s: do iovar cmd=%s (ret=%d)\n", __FUNCTION__, config.iovar, ret));
-#endif
 #else
 		/* tunr off pm */
 		val = 0;

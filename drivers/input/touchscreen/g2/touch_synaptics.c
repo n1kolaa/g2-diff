@@ -252,6 +252,13 @@ extern int keyguard_status;
 #if defined(CONFIG_MACH_MSM8974_G2_OPEN_COM) || defined(CONFIG_MACH_MSM8974_G2_OPT_AU)
 int g_mvol_for_touch;
 
+enum {
+	TOUCH_PANEL_UNKNOWN = 0,
+	TOUCH_PANEL_G1F_LGIT,
+	TOUCH_PANEL_G1F_SSUNTEL,
+	TOUCH_PANEL_G2_LGIT,
+};
+
 /* Board_lge.h */
 typedef enum {
 	TOUCH_ID_0V = 0,
@@ -300,8 +307,8 @@ touch_maker_id get_touch_maker_id(void)
 
 /* LIMIT: Include ONLY A1, B1, Vu3, Z models used MSM8974 AA/AB */
 #ifdef CONFIG_ADC_READY_CHECK_JB
-	while ((qpnp_vadc_is_ready() != 0) && (trial_us < 150)) {
-		msleep(10);
+	while ((qpnp_vadc_is_ready() != 0) && (trial_us < (200 * 1000))) {
+		udelay(1);
 		trial_us++;
 	}
 

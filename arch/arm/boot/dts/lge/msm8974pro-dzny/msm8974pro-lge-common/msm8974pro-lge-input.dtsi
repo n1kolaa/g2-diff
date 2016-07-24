@@ -117,7 +117,7 @@
 				thermal_check = <1>;
 				palm_ctrl_mode = <0>;
 				use_hover_finger = <0>;
-				use_rmi_dev = <0>;
+				use_rmi_dev = <1>;
 				irqflags = <0x00000002>;
 				bouncing.enable = <0>;
 				grip.enable = <0>;
@@ -182,7 +182,7 @@
 				/*firmware*/
 				need_upgrade = <1>;
 				fw_pid_addr = <0x0040>;
-				fw_ver_addr = <0x16d00>;	/* PLG449 */
+				fw_ver_addr = <0x16d00 0x15500>;	/* PLG446, PLG468 */
 
 				/* Rx & Tx cap*/
 				tx_cap = <5 10 2 9 7 5 1 2 2 1 10 2 3 83 7 2 8 0 10 0 5 8 4 8 6 40 88>;
@@ -191,7 +191,7 @@
 				ref_chk_option = <0 0 1 1>;
 
 				/* firmware & panel_spec path */
-				fw_image = "synaptics/dzny_dcm_jp/PLG503-V0.09-PR1820142-DS5.2.13.0.1014_40052109.img";
+				fw_image = "synaptics/dzny_dcm_jp/PLG431-V1.25_PR1741017_DS5.2.12.1013_20141030.img";
 				panel_spec = "synaptics/dzny_dcm_jp/dzny_dcm_jp_limit.txt";
 				panel_spec_mfts = "synaptics/dzny_dcm_jp/dzny_dcm_jp_limit_mfts.txt";
 			};

@@ -25,8 +25,7 @@
 #include <linux/platform_device.h>
 #include <linux/slab.h>
 #if defined(CONFIG_FB)
-#include <linux/notifier.h>
-#include <linux/fb.h>
+#include <linux/lcd_notify.h>
 #elif defined(CONFIG_HAS_EARLYSUSPEND)
 #include <linux/earlysuspend.h>
 #endif
@@ -138,40 +137,8 @@ struct timeval t_ex_debug[TIME_EX_PROFILE_MAX];
 #define TOUCH_BUTTON_ENABLE_Y_POSITION 1899
 #endif
 
-static char fb_blank_called = 0;
-
 #if defined(CONFIG_FB)
-static int touch_lcd_suspend(struct device *device);
-static int touch_lcd_resume(struct device *device);
-
-static int fb_notifier_callback(struct notifier_block *self,
-	unsigned long event, void *data)
-{
-	struct fb_event *evdata = (struct fb_event*)data;
-	struct lge_touch_data *ts =
-		container_of(self, struct lge_touch_data, fb_notif);
-
-	if (evdata && evdata->data && event == FB_EVENT_BLANK) {
-		int *blank = (int *)evdata->data;
-		if (*blank == FB_BLANK_UNBLANK) {
-			TOUCH_INFO_MSG("FB_BLANK_UNBLANK \n");
-		#ifdef CUST_G2_TOUCH
-			if(f54_window_crack_check_mode)
-				mdelay(200);
-		#endif
-			fb_blank_called = 0;
-			touch_lcd_resume(&ts->client->dev);
-		} else if (*blank == FB_BLANK_POWERDOWN) {
-			TOUCH_INFO_MSG("FB_BLANK_POWERDOWN \n");
-			fb_blank_called = 1;
-			#if !defined(CONFIG_LGE_SECURITY_KNOCK_ON)
-			touch_lcd_suspend(&ts->client->dev);
-			#endif
-		}
-	}
-
-	return 0;
-}
+static int lcd_notifier_callback(struct notifier_block *self, unsigned long event, void *data);
 #elif defined(CONFIG_HAS_EARLYSUSPEND)
 static void touch_early_suspend(struct early_suspend *h);
 static void touch_late_resume(struct early_suspend *h);
@@ -195,6 +162,7 @@ static struct hrtimer hr_touch_trigger_timer;
 #define MS_TO_NS(x)	(x * 1E6L)
 
 static bool touch_irq_wake = 0;
+
 void wakeup_gesture_reset(void);
 EXPORT_SYMBOL(wakeup_gesture_reset);
 
@@ -3253,7 +3221,7 @@ static void touch_fw_upgrade_func(struct work_struct *work_fw_upgrade)
 #endif  //#if defined(CONFIG_MACH_MSM8974_TIGERS_KR)
 #endif	//#ifdef CONFIG_MACH_MSM8974_G2_OPEN_COM
 #endif	//#ifdef CONFIG_MACH_MSM8974_VU3_KR
-#endif	//#ifdef CONFIG_LGE_Z_TOUCHSCREEN
+#endif	//                               
 	}
 #else
 	if ((!strcmp(ts->pdata->fw_version, ts->fw_info.ic_fw_version)
@@ -4800,6 +4768,10 @@ no_action:
 /* Sysfs - lpwg_notify (Low Power Wake-up Gesture)
  *
  */
+#if defined(CONFIG_FB)
+static int touch_lcd_suspend(struct device *device);
+static int touch_lcd_resume(struct device *device);
+#endif
 static ssize_t store_lpwg_notify(struct lge_touch_data *ts, const char *buf, size_t count)
 {
 //    static int suspend = 0;
@@ -4859,12 +4831,6 @@ static ssize_t store_lpwg_notify(struct lge_touch_data *ts, const char *buf, siz
             break;
 		case 8 :
 			touch_device_func->lpwg(ts->client, LPWG_DOUBLE_TAP_CHECK, value[0], NULL);
-			break;
-		case 9 :
-			if (value[1] == 0 && ts_suspend == 0)
-				touch_lcd_suspend(&ts->client->dev);
-			else if (value[1] == 1 && ts_suspend == 1)
-				touch_lcd_resume(&ts->client->dev);
 			break;
         default:
             break;
@@ -5780,8 +5746,9 @@ static int touch_probe(struct i2c_client *client, const struct i2c_device_id *id
 	}
 
 #if defined(CONFIG_FB)
-	ts->fb_notif.notifier_call = fb_notifier_callback;
-	fb_register_client(&ts->fb_notif);
+	ts->notif.notifier_call = lcd_notifier_callback;
+	if((ret = lcd_register_client(&ts->notif)))
+		TOUCH_ERR_MSG("Unable to register notifier: %d\n", ret);
 #elif defined(CONFIG_HAS_EARLYSUSPEND)
 	ts->early_suspend.level = EARLY_SUSPEND_LEVEL_BLANK_SCREEN + 1;
 	ts->early_suspend.suspend = touch_early_suspend;
@@ -5839,7 +5806,7 @@ err_lge_touch_sys_class_register:
 	mutex_destroy(&ts->irq_work_mutex);
 	mutex_destroy(&i2c_suspend_lock);
 #if defined(CONFIG_FB)
-	fb_unregister_client(&ts->fb_notif);
+	lcd_unregister_client(&ts->notif);
 #elif defined(CONFIG_HAS_EARLYSUSPEND)
 	unregister_early_suspend(&ts->early_suspend);
 #endif
@@ -5879,7 +5846,8 @@ static int touch_remove(struct i2c_client *client)
 	sysdev_class_unregister(&lge_touch_sys_class);
 
 #if defined(CONFIG_FB)
-	fb_unregister_client(&ts->fb_notif);
+	if (lcd_unregister_client(&ts->notif))
+		TOUCH_ERR_MSG("Error occurred while unregistering notifier.\n");
 #elif defined(CONFIG_HAS_EARLYSUSPEND)
 	unregister_early_suspend(&ts->early_suspend);
 #endif
@@ -5909,9 +5877,6 @@ static int touch_remove(struct i2c_client *client)
 static int touch_lcd_suspend(struct device *device)
 {
 	struct lge_touch_data *ts =  dev_get_drvdata(device);
-
-	TOUCH_INFO_MSG("%s \n", __func__);
-
 #ifdef I2C_SUSPEND_WORKAROUND
 	if (!ts) {
 		TOUCH_ERR_MSG("Called before init\n");
@@ -5970,7 +5935,7 @@ static int touch_lcd_suspend(struct device *device)
 	knockon_wakeup_uevent_reporting = 0;
 #endif
 
-#if 0//#ifdef CONFIG_LGE_SECURITY_KNOCK_ON
+#if 0//                                   
 //	atomic_set(&ts->state.uevent_state, UEVENT_IDLE);
 	touch_device_func->suspend(ts->client);
 #endif
@@ -6029,9 +5994,6 @@ static int touch_lcd_resume(struct device *device)
 {
 	struct lge_touch_data *ts =  dev_get_drvdata(device);
 	int	ret=0;
-
-	TOUCH_INFO_MSG("%s \n", __func__);
-
 #ifdef I2C_SUSPEND_WORKAROUND
 	if (!ts) {
 		TOUCH_ERR_MSG("Called before init\n");
@@ -6153,6 +6115,31 @@ failed_out:
 
 }
 
+static int lcd_notifier_callback(struct notifier_block *self, unsigned long event, void *data)
+{
+	struct lge_touch_data *ts = container_of(self, struct lge_touch_data, notif);
+
+	TOUCH_INFO_MSG("%s: event = %lu\n", __func__, event);
+
+	switch(event){
+		case LCD_EVENT_ON_START:
+#ifdef CUST_G2_TOUCH
+			if(f54_window_crack_check_mode)
+				mdelay(200);
+#endif
+			touch_lcd_resume(&ts->client->dev);
+			TOUCH_INFO_MSG("touch_resume\n");
+			break;
+		case LCD_EVENT_OFF_START:
+			touch_lcd_suspend(&ts->client->dev);
+			TOUCH_INFO_MSG("touch_suspend\n");
+			break;
+		default:
+			break;
+	}
+
+	return 0;
+}
 #elif defined(CONFIG_HAS_EARLYSUSPEND)
 static void touch_early_suspend(struct early_suspend *h)
 {

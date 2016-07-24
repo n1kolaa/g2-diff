@@ -9951,8 +9951,7 @@ int hdd_del_all_sta(hdd_adapter_t *pAdapter)
 
                 WLANSAP_PopulateDelStaParams(
                             pSapCtx->aStaInfo[i].macAddrSTA.bytes,
-                            eSIR_MAC_DEAUTH_LEAVING_BSS_REASON,
-                            SIR_MAC_MGMT_DEAUTH >> 4,
+                            eCsrForcedDeauthSta, SIR_MAC_MGMT_DEAUTH >> 4,
                             &delStaParams);
                 vos_status = hdd_softap_sta_deauth(pAdapter, &delStaParams);
                 if (VOS_IS_STATUS_SUCCESS(vos_status))

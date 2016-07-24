@@ -27,60 +27,46 @@
 
 #include "fci_types.h"
 
-#define DRIVER_VER "S1.21.0"
+#define DRIVER_VER "S1.10.0"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-extern s32 bbm_com_reset(HANDLE handle, DEVICEID devid);
-extern s32 bbm_com_probe(HANDLE handle, DEVICEID devid);
-extern s32 bbm_com_init(HANDLE handle, DEVICEID devid);
-extern s32 bbm_com_deinit(HANDLE handle, DEVICEID devid);
-extern s32 bbm_com_read(HANDLE handle, DEVICEID devid, u16 addr, u8 *data);
-extern s32 bbm_com_byte_read(HANDLE handle, DEVICEID devid, u16 addr, u8 *data);
-extern s32 bbm_com_word_read(HANDLE handle
-	, DEVICEID devid, u16 addr, u16 *data);
-extern s32 bbm_com_long_read(HANDLE handle
-	, DEVICEID devid, u16 addr, u32 *data);
-extern s32 bbm_com_bulk_read(HANDLE handle, DEVICEID devid, u16 addr, u8 *data,
+s32 bbm_com_reset(HANDLE handle, DEVICEID devid);
+s32 bbm_com_probe(HANDLE handle, DEVICEID devid);
+s32 bbm_com_init(HANDLE handle, DEVICEID devid);
+s32 bbm_com_deinit(HANDLE handle, DEVICEID devid);
+s32 bbm_com_read(HANDLE handle, DEVICEID devid, u16 addr, u8 *data);
+s32 bbm_com_byte_read(HANDLE handle, DEVICEID devid, u16 addr, u8 *data);
+s32 bbm_com_word_read(HANDLE handle, DEVICEID devid, u16 addr, u16 *data);
+s32 bbm_com_long_read(HANDLE handle, DEVICEID devid, u16 addr, u32 *data);
+s32 bbm_com_bulk_read(HANDLE handle, DEVICEID devid, u16 addr, u8 *data,
 							u16 size);
-extern s32 bbm_com_data(HANDLE handle
-	, DEVICEID devid, u16 addr, u8 *data, u32 size);
-extern s32 bbm_com_write(HANDLE handle, DEVICEID devid, u16 addr, u8 data);
-extern s32 bbm_com_byte_write(HANDLE handle, DEVICEID devid, u16 addr, u8 data);
-extern s32 bbm_com_word_write(HANDLE handle
-	, DEVICEID devid, u16 addr, u16 data);
-extern s32 bbm_com_long_write(HANDLE handle
-	, DEVICEID devid, u16 addr, u32 data);
-extern s32 bbm_com_bulk_write(HANDLE handle, DEVICEID devid,
+s32 bbm_com_data(HANDLE handle, DEVICEID devid, u16 addr, u8 *data, u32 size);
+s32 bbm_com_write(HANDLE handle, DEVICEID devid, u16 addr, u8 data);
+s32 bbm_com_byte_write(HANDLE handle, DEVICEID devid, u16 addr, u8 data);
+s32 bbm_com_word_write(HANDLE handle, DEVICEID devid, u16 addr, u16 data);
+s32 bbm_com_long_write(HANDLE handle, DEVICEID devid, u16 addr, u32 data);
+s32 bbm_com_bulk_write(HANDLE handle, DEVICEID devid,
 		u16 addr, u8 *data, u16 size);
-extern s32 bbm_com_i2c_init(HANDLE handle, u32 type);
-extern s32 bbm_com_i2c_deinit(HANDLE handle);
-extern s32 bbm_com_tuner_select(HANDLE handle, DEVICEID devid,
+s32 bbm_com_i2c_init(HANDLE handle, u32 type);
+s32 bbm_com_i2c_deinit(HANDLE handle);
+s32 bbm_com_tuner_select(HANDLE handle, DEVICEID devid,
 		u32 product, u32 brodcast);
-extern s32 bbm_com_tuner_deselect(HANDLE handle, DEVICEID devid);
-extern s32 bbm_com_tuner_read(HANDLE handle, DEVICEID devid,
+s32 bbm_com_tuner_deselect(HANDLE handle, DEVICEID devid);
+s32 bbm_com_tuner_read(HANDLE handle, DEVICEID devid,
 		u8 addr, u8 alen, u8 *buffer, u8 len);
-extern s32 bbm_com_tuner_write(HANDLE handle, DEVICEID devid,
+s32 bbm_com_tuner_write(HANDLE handle, DEVICEID devid,
 		u8 addr, u8 alen, u8 *buffer, u8 len);
-extern s32 bbm_com_tuner_set_freq(HANDLE handle
-	, DEVICEID devid, u32 freq, u8 subch);
-extern s32 bbm_com_tuner_get_rssi(HANDLE handle, DEVICEID devid, s32 *rssi);
-extern s32 bbm_com_scan_status(HANDLE handle, DEVICEID devid);
-extern s32 bbm_com_hostif_select(HANDLE handle, u8 hostif);
-extern s32 bbm_com_hostif_deselect(HANDLE handle);
-extern s32 bbm_com_ts_callback_register(u32 userdata,
+s32 bbm_com_tuner_set_freq(HANDLE handle, DEVICEID devid, u32 freq, u8 subch);
+s32 bbm_com_tuner_get_rssi(HANDLE handle, DEVICEID devid, s32 *rssi);
+s32 bbm_com_scan_status(HANDLE handle, DEVICEID devid);
+s32 bbm_com_hostif_select(HANDLE handle, u8 hostif);
+s32 bbm_com_hostif_deselect(HANDLE handle);
+s32 bbm_com_ts_callback_register(u32 userdata,
 		s32 (*callback)(u32 userdata, u8 bufid, u8 *data, s32 length));
-extern s32 bbm_com_ts_callback_deregister(void);
-extern s32 bbm_com_ac_callback_register(u32 userdata,
+s32 bbm_com_ts_callback_deregister(void);
+s32 bbm_com_ac_callback_register(u32 userdata,
 		s32 (*callback)(u32 userdata, u8 bufid, u8 *data, s32 length));
-extern s32 bbm_com_ac_callback_deregister(void);
-extern void bbm_com_isr(HANDLE handle);
-
-#ifdef __cplusplus
-}
-#endif
+s32 bbm_com_ac_callback_deregister(void);
+void bbm_com_isr(HANDLE handle);
 
 #endif /* __BBM_H__ */
 

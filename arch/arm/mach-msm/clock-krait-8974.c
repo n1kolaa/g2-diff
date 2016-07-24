@@ -564,7 +564,11 @@ static int hfpll_base_init(struct platform_device *pdev, struct hfpll_clk *h)
 	return 0;
 }
 
+#ifdef CONFIG_LGE_KRAIT_BOOST_ENABLE
+static bool enable_boost = 1;
+#else
 static bool enable_boost;
+#endif
 module_param_named(boost, enable_boost, bool, S_IRUGO | S_IWUSR);
 
 static void krait_update_uv(int *uv, int num, int boost_uv)
@@ -705,7 +709,11 @@ static int clock_krait_8974_driver_probe(struct platform_device *pdev)
 		}
 	}
 
+#ifdef CONFIG_LGE_KRAIT_BOOST_ENABLE
+	krait_update_uv(uv, rows, pvs > 2 ? 25000 : 0);
+#else
 	krait_update_uv(uv, rows, pvs ? 25000 : 0);
+#endif
 
 	if (clk_init_vdd_class(dev, &krait0_clk.c, rows, freq, uv, ua))
 		return -ENOMEM;

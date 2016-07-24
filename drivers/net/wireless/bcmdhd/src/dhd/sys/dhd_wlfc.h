@@ -35,7 +35,7 @@
 #define BUS_RETRIES 1	/* # of retries before aborting a bus tx operation */
 
 /* 16 bits will provide an absolute max of 65536 slots */
-#define WLFC_HANGER_MAXITEMS 3072
+#define WLFC_HANGER_MAXITEMS 1024
 
 #define WLFC_HANGER_ITEM_STATE_FREE			1
 #define WLFC_HANGER_ITEM_STATE_INUSE			2

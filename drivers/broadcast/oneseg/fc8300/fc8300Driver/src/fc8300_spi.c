@@ -26,7 +26,6 @@
 #include <linux/slab.h>
 #include <linux/module.h>
 
-#include "broadcast_fc8300.h"
 #include "fci_types.h"
 #include "fc8300_regs.h"
 #include "fci_oal.h"
@@ -49,8 +48,7 @@ static u8 rdata_buf[65536] __cacheline_aligned;
 
 static DEFINE_MUTEX(fci_spi_lock);
 
-#if 0
-static int __devinit fc8300_spi_probe(struct spi_device *spi)
+static int fc8300_spi_probe(struct spi_device *spi)
 {
 	s32 ret;
 
@@ -82,9 +80,8 @@ static struct spi_driver fc8300_spi_driver = {
 		.owner		= THIS_MODULE,
 	},
 	.probe		= fc8300_spi_probe,
-    .remove        = __devexit_p(fc8300_spi_remove),
+	.remove		= fc8300_spi_remove,
 };
-#endif
 
 static int fc8300_spi_write_then_read(struct spi_device *spi
 	, u8 *txbuf, u16 tx_length, u8 *rxbuf, u16 rx_length)
@@ -190,9 +187,9 @@ s32 fc8300_spi_init(HANDLE handle, u16 param1, u16 param2)
 	int res = 0;
 
 	print_log(0, "fc8300_spi_init : %d\n", res);
-#ifndef BBM_I2C_TSIF
-    fc8300_spi = FCI_GET_SPI_DRIVER();
-#endif
+
+	res = spi_register_driver(&fc8300_spi_driver);
+
 	if (res) {
 		print_log(0, "fc8300_spi register fail : %d\n", res);
 		return BBM_NOK;
@@ -270,7 +267,14 @@ s32 fc8300_spi_bytewrite(HANDLE handle, DEVICEID devid, u16 addr, u8 data)
 s32 fc8300_spi_wordwrite(HANDLE handle, DEVICEID devid, u16 addr, u16 data)
 {
 	s32 res;
+#ifdef BBM_ES
+	u8 command = SPI_WRITE;
+
+	if ((addr & 0xff00) != 0x0f00)
+		command |= SPI_AINC;
+#else
 	u8 command = SPI_WRITE | SPI_AINC;
+#endif
 
 	mutex_lock(&fci_spi_lock);
 	res = spi_bulkwrite(handle, (u8) (devid & 0x000f), addr, command,

@@ -34,10 +34,11 @@ extern struct mdss_panel_data *pdata_base;
 
 #if defined(CONFIG_LGE_MIPI_DZNY_JDI_INCELL_FHD_VIDEO_PANEL)
 extern int dw8768_mode_change(int mode);
-static bool touch_driver_registered=false;
-#include <linux/input/lge_touch_notify.h>
-#endif //CONFIG_LGE_MIPI_DZNY_JDI_INCELL_FHD_VIDEO_PANEL
+#endif
 
+#if defined(CONFIG_LGE_MIPI_DZNY_JDI_INCELL_FHD_VIDEO_PANEL)
+//#include <linux/input/lge_touch_notify.h>
+#endif //                                               
 static int mdss_dsi_regulator_init(struct platform_device *pdev)
 {
 	struct mdss_dsi_ctrl_pdata *ctrl_pdata = NULL;
@@ -183,6 +184,7 @@ static int mdss_dsi_panel_power_on(struct mdss_panel_data *pdata, int enable)
         // DSV Enable
         //------------
         dw8768_mode_change(1);
+        mdelay(10);
 #endif
 
 		if (!pdata->panel_info.mipi.lp11_init) {
@@ -240,6 +242,13 @@ static int mdss_dsi_panel_power_on(struct mdss_panel_data *pdata, int enable)
 		mdss_dsi_panel_io(pdata, 0);
 #endif
 
+#ifdef CONFIG_LGE_MIPI_DZNY_JDI_INCELL_FHD_VIDEO_PANEL
+                //------------
+                // DSV Disable
+                //------------
+                dw8768_mode_change(0);
+                mdelay(10);
+#endif
 		ret = msm_dss_enable_vreg(
 			ctrl_pdata->power_data.vreg_config,
 			ctrl_pdata->power_data.num_vreg, 0);
@@ -861,12 +870,6 @@ int mdss_dsi_on(struct mdss_panel_data *pdata)
 	pinfo = &pdata->panel_info;
 	mipi = &pdata->panel_info.mipi;
 
-#ifdef CONFIG_LGE_MIPI_DZNY_JDI_INCELL_FHD_VIDEO_PANEL
-        if(touch_driver_registered){
-            touch_notifier_call_chain(LCD_EVENT_TOUCH_LPWG_OFF, NULL);
-        }
-#endif
-
 	ret = mdss_dsi_panel_power_on(pdata, 1);
 	if (ret) {
 		pr_err("%s:Panel power on failed. rc=%d\n", __func__, ret);
@@ -889,11 +892,11 @@ int mdss_dsi_on(struct mdss_panel_data *pdata)
 
 #if !defined(CONFIG_B1_LGD_PANEL)
 #ifdef CONFIG_MACH_LGE
-	/* LGE_CHANGE
-	 * change position after panel reset
-	 * due to not get into reset sequence (in case lp11)
-	 * 2014-08-07, baryun.hwang@lge.com
-	 */
+	/*           
+                                     
+                                                     
+                                    
+  */
 	if (!mipi->lp11_init)
 #endif
 		pdata->panel_info.panel_power_on = 1;
@@ -1334,25 +1337,6 @@ int mdss_dsi_register_recovery_handler(struct mdss_dsi_ctrl_pdata *ctrl,
 	return 0;
 }
 
-#if defined(CONFIG_LGE_MIPI_DZNY_JDI_INCELL_FHD_VIDEO_PANEL)
-static int lcd_notifier_callback(struct notifier_block *this, unsigned long event, void *data)
-{
-	switch(event) {
-		case TOUCH_EVENT_RESET_START:
-			pr_err("%s: TOUCH_EVENT_RESET_START received\n ",__func__);
-			break;
-		case TOUCH_EVENT_REGISTER_DONE:
-            touch_driver_registered = true;
-			pr_err("%s: TOUCH_EVENT_REGISTER_DONE received\n ",__func__);
-			break;
-		default:
-			pr_err("%s:no event called\n",__func__);
-			break;
-	}
-	return 0;
-}
-#endif
-
 static int mdss_dsi_event_handler(struct mdss_panel_data *pdata,
 				  int event, void *arg)
 {
@@ -1399,11 +1383,6 @@ static int mdss_dsi_event_handler(struct mdss_panel_data *pdata,
 		if (ctrl_pdata->off_cmds.link_state == DSI_LP_MODE)
 			rc = mdss_dsi_blank(pdata);
 		rc = mdss_dsi_off(pdata);
-#if defined(CONFIG_LGE_MIPI_DZNY_JDI_INCELL_FHD_VIDEO_PANEL)
-        if(touch_driver_registered){
-            touch_notifier_call_chain(LCD_EVENT_TOUCH_LPWG_ON, NULL);
-        }
-#endif
 		break;
 	case MDSS_EVENT_CONT_SPLASH_FINISH:
 		if (ctrl_pdata->off_cmds.link_state == DSI_LP_MODE)
@@ -1644,15 +1623,6 @@ static int __devinit mdss_dsi_ctrl_probe(struct platform_device *pdev)
 		pr_err("%s: dsi panel dev reg failed\n", __func__);
 		goto error_pan_node;
 	}
-
-#if defined(CONFIG_LGE_MIPI_DZNY_JDI_INCELL_FHD_VIDEO_PANEL)
-    touch_driver_registered = false;
-	ctrl_pdata->notif.notifier_call = lcd_notifier_callback;
-
-	if(touch_register_client(&ctrl_pdata->notif) != 0) {
-		pr_err("Failed to register callback\n");
-	}
-#endif
 
 	pr_debug("%s: Dsi Ctrl->%d initialized\n", __func__, index);
 	return 0;
@@ -1947,7 +1917,7 @@ int dsi_panel_device_register(struct device_node *pan_node,
         gpio_set_value(ctrl_pdata->dsv_ena, 1);
 	}
 }
-#else // else : CONFIG_LGE_MIPI_DZNY_JDI_INCELL_FHD_VIDEO_PANEL
+#else //                                                       
 
 #if defined(CONFIG_MACH_MSM8974_G3) || defined(CONFIG_MACH_MSM8974_DZNY)
 {
@@ -1970,7 +1940,7 @@ int dsi_panel_device_register(struct device_node *pan_node,
     ctrl_pdata->disp_en_gpio = of_get_named_gpio(ctrl_pdev->dev.of_node,
 			"qcom,platform-enable-gpio", 0);
 #endif
-#endif //CONFIG_LGE_MIPI_DZNY_JDI_INCELL_FHD_VIDEO_PANEL
+#endif //                                               
 
 #ifdef CONFIG_MACH_LGE
 	if (!gpio_is_valid(ctrl_pdata->disp_en_gpio)) {
@@ -2074,12 +2044,12 @@ int dsi_panel_device_register(struct device_node *pan_node,
 		pr_err("%s:%d, reset gpio not specified\n",
 						__func__, __LINE__);
 	} else {
-		/* LGE_CHANGE
-		 * gpio request once in booting time
-		 * to meet gpio request/free pair
-		 * only when conitnous splash on
-		 * 2014-08-07, baryun.hwang@lge.com
-		 */
+		/*           
+                                      
+                                   
+                                  
+                                     
+   */
 		if (pinfo->cont_splash_enabled) {
 			rc = gpio_request(ctrl_pdata->rst_gpio, "disp_rst_n");
 			if (rc) {

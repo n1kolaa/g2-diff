@@ -121,4 +121,9 @@ config LGE_GDSC_SWCONTROL
 	  When enable this, LGE's sw control code for gdsc enable and diasble
 	  are used. Normally, msm8974AA chipset based LGE model may use it.
 
+config LGE_KRAIT_BOOST_ENABLE
+	bool "Support Kraits Voltage Boost up"
+	help
+	 Select if enable Krait Voltage Boost up.
+
 endmenu

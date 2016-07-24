@@ -40,6 +40,7 @@ static struct ctl_table crypto_sysctl_table[] = {
 	},
 	{
 		.procname       = "cc_mode",
+		.data			= &fips_enabled, // FIPS and CC modes are the same
 		.maxlen         = sizeof(int),
 		.mode           = 0444,
 		.proc_handler   = proc_dointvec
@@ -155,11 +156,10 @@ static const struct file_operations proc_crypto_ops = {
 };
 
 #ifdef CONFIG_CRYPTO_FIPS
-void crypto_init_proc(int * fips_error, int * cc_mode)
+void crypto_init_proc(int *fips_error)
 {
 	proc_create("crypto", 0, NULL, &proc_crypto_ops);
 	crypto_sysctl_table[1].data = fips_error;
-	crypto_sysctl_table[2].data = cc_mode;
 	crypto_proc_fips_init();
 }
 #else

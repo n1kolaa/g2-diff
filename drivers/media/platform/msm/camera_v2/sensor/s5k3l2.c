@@ -22,38 +22,44 @@ static struct msm_sensor_power_setting s5k3l2_power_setting[] = {
 		.seq_type = SENSOR_GPIO,
 		.seq_val = SENSOR_GPIO_RESET,
 		.config_val = GPIO_OUT_LOW,
-		.delay = 0,
+		.delay = 1,
 	},
 	{										//VIO, GPIO 96
 		.seq_type = SENSOR_GPIO,
 		.seq_val = SENSOR_GPIO_VIO,
 		.config_val = GPIO_OUT_HIGH,
-		.delay = 0,
+		.delay = 1,
 	},
 	{										//VDIG
 		.seq_type = SENSOR_VREG,
 		.seq_val = CAM_VDIG,
 		.config_val = 0,
-		.delay = 0,
+		.delay = 1,
 	},
 	{										//VANA, GPIO 16
 		.seq_type = SENSOR_GPIO,
 		.seq_val = SENSOR_GPIO_VANA,
 		.config_val = GPIO_OUT_HIGH,
-		.delay = 0,
+		.delay = 2,
 	},
 #if defined(CONFIG_LG_PROXY)
 	{										//LDAF_EN, PMIC_GPIO 1
 		.seq_type = SENSOR_GPIO,
 		.seq_val = SENSOR_GPIO_LDAF_EN,
 		.config_val = GPIO_OUT_HIGH,
-		.delay = 1,
+		.delay = 3,
 	},
 #endif
 	{										//VCM, GPIO 145
 		.seq_type = SENSOR_GPIO,
 		.seq_val = SENSOR_GPIO_VAF,
 		.config_val = GPIO_OUT_HIGH,
+		.delay = 3,
+	},
+	{
+		.seq_type = SENSOR_CLK,
+		.seq_val = SENSOR_CAM_MCLK,
+		.config_val = 0,
 		.delay = 1,
 	},
 	{
@@ -61,12 +67,6 @@ static struct msm_sensor_power_setting s5k3l2_power_setting[] = {
 		.seq_val = SENSOR_GPIO_RESET,
 		.config_val = GPIO_OUT_HIGH,
 		.delay = 1,
-	},
-	{
-		.seq_type = SENSOR_CLK,
-		.seq_val = SENSOR_CAM_MCLK,
-		.config_val = 0,
-		.delay = 10,
 	},
 	{
 		.seq_type = SENSOR_I2C_MUX,

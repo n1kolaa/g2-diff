@@ -618,8 +618,6 @@ mdss_dsi_tigers_lgd_cmd: qcom,mdss_dsi_tigers_lgd_cmd {
 
 		qcom,mdss-dsi-on-command-state = "dsi_lp_mode";
 		qcom,mdss-dsi-off-command-state = "dsi_hs_mode";
-		qcom,mdss-pan-physical-width-dimension = <65>;
-		qcom,mdss-pan-physical-height-dimension = <115>;
 		qcom,mdss-dsi-h-sync-pulse = <0>;
 		qcom,mdss-dsi-traffic-mode = "non_burst_sync_event";
 		qcom,mdss-dsi-lane-map = "lane_map_0123";
@@ -815,8 +813,6 @@ mdss_dsi_tigers_jdi_cmd: qcom,mdss_dsi_tigers_jdi_cmd {
 
 		qcom,mdss-dsi-on-command-state = "dsi_lp_mode";
 		qcom,mdss-dsi-off-command-state = "dsi_hs_mode";
-		qcom,mdss-pan-physical-width-dimension = <65>;
-		qcom,mdss-pan-physical-height-dimension = <115>;
 		qcom,mdss-dsi-h-sync-pulse = <0>;
 		qcom,mdss-dsi-traffic-mode = "non_burst_sync_event";
 		qcom,mdss-dsi-lane-map = "lane_map_0123";

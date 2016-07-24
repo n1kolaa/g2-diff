@@ -53,8 +53,6 @@
 static int touch_gesture_enable = 0;
 static struct wake_lock touch_wake_lock;
 static struct mutex i2c_suspend_lock;
-static struct mutex lpwg_lock;
-
 #ifndef CONFIG_LGE_SECURITY_KNOCK_ON
 static void touch_double_tap_wakeup_enable(struct lge_touch_data *ts);
 #endif
@@ -2197,12 +2195,12 @@ static void touch_gesture_wakeup_func(struct work_struct *work_gesture_wakeup)
 #endif
 	struct lge_touch_data *ts =
 		container_of(to_delayed_work(work_gesture_wakeup), struct lge_touch_data, work_gesture_wakeup);
-#if !defined(CONFIG_MACH_MSM8974_G2_OPEN_COM) && !defined(CONFIG_MACH_MSM8974_G2_OPT_AU)
+
 	if(ts->fw_info.fw_setting.ic_chip_rev == TOUCH_CHIP_REV_A) {
 		TOUCH_INFO_MSG("[%s]Touch IC Rev_A, not support knock on\n", __func__);
 		return;
 		}
-#endif
+
 	if (ts->fw_info.fw_upgrade.is_downloading == UNDER_DOWNLOADING){
 		TOUCH_INFO_MSG("touch_gesture_wakeup is not executed\n");
 		return;
@@ -2224,18 +2222,6 @@ static void touch_gesture_wakeup_func(struct work_struct *work_gesture_wakeup)
 	if((int)simple_strtoul(&ts->fw_info.ic_fw_version[1], NULL, 10)<50){
 #endif
 #if defined(A1_only)
-#if defined(CONFIG_MACH_MSM8974_G2_OPEN_COM) || defined(CONFIG_MACH_MSM8974_G2_OPT_AU)
-	switch(touch_test_dev->fw_info.fw_setting.curr_touch_vendor) {
-							case TOUCH_PANEL_G1F_LGIT:
-							   A1_vendor = 17;
-							   break;
-						   case TOUCH_PANEL_G1F_SSUNTEL:
-							   A1_vendor = 9;
-							   break;
-						   default:
-							   break;
-	   }
-#else
 	switch(touch_test_dev->fw_info.fw_setting.curr_touch_vendor) {
 							case TOUCH_VENDOR_TPK:
 							   A1_vendor = 14;
@@ -2246,7 +2232,6 @@ static void touch_gesture_wakeup_func(struct work_struct *work_gesture_wakeup)
 						   default:
 							   break;
 	   }
-#endif
 	if((int)simple_strtoul(&ts->fw_info.ic_fw_version[1], NULL, 10)<A1_vendor){
 #endif
 		if(buf !=0x04){
@@ -2301,18 +2286,6 @@ static void touch_gesture_wakeup_func(struct work_struct *work_gesture_wakeup)
 	if((int)simple_strtoul(&ts->fw_info.ic_fw_version[1], NULL, 10)<50){
 #endif
 #if defined(A1_only)
-#if defined(CONFIG_MACH_MSM8974_G2_OPEN_COM) || defined(CONFIG_MACH_MSM8974_G2_OPT_AU)
-	switch(touch_test_dev->fw_info.fw_setting.curr_touch_vendor) {
-							case TOUCH_PANEL_G1F_LGIT:
-							   A1_vendor = 17;
-							   break;
-						   case TOUCH_PANEL_G1F_SSUNTEL:
-							   A1_vendor = 9;
-							   break;
-						   default:
-							   break;
-	   }
-#else
  switch(touch_test_dev->fw_info.fw_setting.curr_touch_vendor) {
 						 case TOUCH_VENDOR_TPK:
 						 	A1_vendor = 14;
@@ -2323,7 +2296,6 @@ static void touch_gesture_wakeup_func(struct work_struct *work_gesture_wakeup)
 						default:
 							break;
  	}
-#endif
 	if((int)simple_strtoul(&ts->fw_info.ic_fw_version[1], NULL, 10)<A1_vendor){
 #endif
 		if( buf==0x04 ){
@@ -3250,11 +3222,9 @@ if ((!strncmp(ts->fw_info.ic_fw_identifier, "PLG208", 6)) || (!strncmp(ts->fw_in
 
 	if(!strncmp(ts->fw_info.ic_fw_identifier, "s3404", 5)) {
 		TOUCH_INFO_MSG("Touch IC is initial mode!! FW-upgrade is executed\n");
-#if !defined(CONFIG_MACH_MSM8974_G2_OPEN_COM) && !defined(CONFIG_MACH_MSM8974_G2_OPT_AU)
 	} else if(ts->fw_info.fw_setting.ic_chip_rev == TOUCH_CHIP_REV_A) {
 		TOUCH_INFO_MSG("IC F/W Revision is not REV B. FW-upgrade is not executed\n");
 		goto out;
-#endif
 	} else if(strncmp(ts->fw_info.ic_fw_version, ts->fw_info.syna_img_fw_version, 1)){
 		switch(ts->fw_info.fw_setting.curr_touch_vendor) {
 			case TOUCH_VENDOR_LGIT:
@@ -3304,7 +3274,7 @@ if ((!strncmp(ts->fw_info.ic_fw_identifier, "PLG208", 6)) || (!strncmp(ts->fw_in
 		}
 #endif	//#ifdef CONFIG_MACH_MSM8974_G2_OPEN_COM
 #endif	//#ifdef CONFIG_MACH_MSM8974_VU3_KR
-#endif	//#ifdef CONFIG_LGE_Z_TOUCHSCREEN
+#endif	//                               
 	}
 #else
 	if ((!strcmp(ts->pdata->fw_version, ts->fw_info.ic_fw_version)
@@ -3447,9 +3417,7 @@ static irqreturn_t touch_thread_irq_handler(int irq, void *dev_id)
 
 #ifdef CUST_G2_TOUCH_WAKEUP_GESTURE
 	if(ts_suspend && touch_gesture_enable){
-#ifdef CONFIG_LGE_SECURITY_KNOCK_ON
-		wake_lock_timeout(&touch_wake_lock, msecs_to_jiffies(3000));
-#else
+#ifndef CONFIG_LGE_SECURITY_KNOCK_ON
 		wake_lock_timeout(&touch_wake_lock, msecs_to_jiffies(1000));
 #endif
 		TOUCH_INFO_MSG("gesture wakeup\n");
@@ -4602,12 +4570,10 @@ static ssize_t store_glove_finger_enable(struct lge_touch_data *ts, const char *
 static ssize_t store_touch_gesture(struct lge_touch_data *ts, const char *buf, size_t count)
 {
 	int value;
-#if !defined(CONFIG_MACH_MSM8974_G2_OPEN_COM) && !defined(CONFIG_MACH_MSM8974_G2_OPT_AU)
 	if(ts->fw_info.fw_setting.ic_chip_rev == TOUCH_CHIP_REV_A) {
 		TOUCH_INFO_MSG("[%s]Touch IC Rev_A, not support knock on\n", __func__);
 		return count;
 		}
-#endif
 
 #if defined(CONFIG_LGE_Z_TOUCHSCREEN)
 	/* temporary until implement N-pjt */
@@ -4751,12 +4717,12 @@ static struct point lpwg_data[MAX_POINT_SIZE_FOR_LPWG+1];
 static ssize_t show_lpwg_data(struct lge_touch_data *ts, char *buf)
 {
 	int i = 0, ret = 0;
-#if !defined(CONFIG_MACH_MSM8974_G2_OPEN_COM) && !defined(CONFIG_MACH_MSM8974_G2_OPT_AU)
+
 	if (ts->fw_info.fw_setting.ic_chip_rev == TOUCH_CHIP_REV_A) {
 		TOUCH_INFO_MSG("[%s]Touch IC Rev_A, not support knock on\n", __func__);
 		return ret;
 	}
-#endif
+
 	TOUCH_INFO_MSG("[%s]\n", __func__);
 
 	if (touch_device_func->lpwg) {
@@ -4778,12 +4744,12 @@ static ssize_t show_lpwg_data(struct lge_touch_data *ts, char *buf)
 static ssize_t store_lpwg_data(struct lge_touch_data *ts, const char *buf, size_t count)
 {
     int reply = 0;
-#if !defined(CONFIG_MACH_MSM8974_G2_OPEN_COM) && !defined(CONFIG_MACH_MSM8974_G2_OPT_AU)
+
 	if (ts->fw_info.fw_setting.ic_chip_rev == TOUCH_CHIP_REV_A) {
 		TOUCH_INFO_MSG("[%s]Touch IC Rev_A, not support knock on\n", __func__);
 		return count;
 	}
-#endif
+
     sscanf(buf, "%d", &reply);
 	TOUCH_INFO_MSG("[%s] reply=%d\n", __func__, reply);
     if (touch_device_func->lpwg) {
@@ -4847,12 +4813,12 @@ static ssize_t store_lpwg_notify(struct lge_touch_data *ts, const char *buf, siz
 //    static int suspend = 0;
     int type = 0;
     int value[4] = {0};
-#if !defined(CONFIG_MACH_MSM8974_G2_OPEN_COM) && !defined(CONFIG_MACH_MSM8974_G2_OPT_AU)
+
 	if(ts->fw_info.fw_setting.ic_chip_rev == TOUCH_CHIP_REV_A) {
 		TOUCH_INFO_MSG("[%s]Touch IC Rev_A, not support knock on\n", __func__);
 		return count;
 		}
-#endif
+
     sscanf(buf, "%d %d %d %d %d", &type, &value[0], &value[1], &value[2], &value[3]);
     TOUCH_INFO_MSG("[%s] type = %d, value = %d %d %d %d\n", __func__, type, value[0], value[1], value[2], value[3]);
 
@@ -4903,14 +4869,10 @@ static ssize_t store_lpwg_notify(struct lge_touch_data *ts, const char *buf, siz
 #endif
             break;
 	case 9 :
-		mutex_lock(&lpwg_lock);
-
 		if (value[1] == 0 && ts_suspend == 0)
 			touch_lcd_suspend(&ts->client->dev);
 		else if (value[1] == 1 && ts_suspend == 1)
 			touch_lcd_resume(&ts->client->dev);
-
-		mutex_unlock(&lpwg_lock);
 		break;
         default:
             break;
@@ -5504,12 +5466,11 @@ static void touch_double_tap_wakeup_enable(struct lge_touch_data *ts)
 #ifdef CONFIG_LGE_SECURITY_KNOCK_ON
 static void touch_multi_tap_wakeup_enable(struct lge_touch_data *ts, int value)
 {
-#if !defined(CONFIG_MACH_MSM8974_G2_OPEN_COM) && !defined(CONFIG_MACH_MSM8974_G2_OPT_AU)
 	if (ts->fw_info.fw_setting.ic_chip_rev == TOUCH_CHIP_REV_A) {
 		TOUCH_INFO_MSG("[%s]Touch IC Rev_A, not support knock on\n", __func__);
 		return;
 	}
-#endif
+
 	TOUCH_INFO_MSG("[%s] value=%d\n", __func__, value);
 
 	if (ts->curr_pwr_state != POWER_OFF)
@@ -5542,7 +5503,6 @@ static int touch_probe(struct i2c_client *client, const struct i2c_device_id *id
 #ifdef CUST_G2_TOUCH_WAKEUP_GESTURE
 	wake_lock_init(&touch_wake_lock, WAKE_LOCK_SUSPEND, "touch_irq");
 	mutex_init(&i2c_suspend_lock);
-	mutex_init(&lpwg_lock);
 #endif
 
 	if (unlikely(touch_debug_mask & DEBUG_TRACE))
@@ -5755,7 +5715,6 @@ static int touch_probe(struct i2c_client *client, const struct i2c_device_id *id
 			TOUCH_ERR_MSG("request_irq failed. use polling mode\n");
 			goto err_interrupt_failed;
 		}
-		touch_irq = 1;
 	}
 	/* polling mode */
 	else{
@@ -5904,7 +5863,6 @@ err_lge_touch_sys_class_register:
 	sysdev_class_unregister(&lge_touch_sys_class);
 	mutex_destroy(&ts->irq_work_mutex);
 	mutex_destroy(&i2c_suspend_lock);
-	mutex_destroy(&lpwg_lock);
 #if defined(CONFIG_FB)
 	fb_unregister_client(&ts->fb_notif);
 #elif defined(CONFIG_HAS_EARLYSUSPEND)
@@ -5962,7 +5920,6 @@ static int touch_remove(struct i2c_client *client)
 #endif
 	mutex_destroy(&ts->irq_work_mutex);
 	mutex_destroy(&i2c_suspend_lock);
-	mutex_destroy(&lpwg_lock);
 
 	input_unregister_device(ts->input_dev);
 #ifdef CUST_G2_TOUCH_WAKEUP_GESTURE
@@ -6038,7 +5995,7 @@ static int touch_lcd_suspend(struct device *device)
 	knockon_wakeup_uevent_reporting = 0;
 #endif
 
-#if 0//#ifdef CONFIG_LGE_SECURITY_KNOCK_ON
+#if 0//                                   
 //	atomic_set(&ts->state.uevent_state, UEVENT_IDLE);
 	touch_device_func->suspend(ts->client);
 #endif
@@ -6099,11 +6056,6 @@ static int touch_lcd_resume(struct device *device)
 	int	ret=0;
 
 	TOUCH_INFO_MSG("%s \n", __func__);
-
-	if(lge_get_boot_mode() == LGE_BOOT_MODE_CHARGERLOGO) {
-		TOUCH_INFO_MSG("Ignore resume in chargerlogo mode\n");
-		return ret;
-	}
 
 #ifdef I2C_SUSPEND_WORKAROUND
 	if (!ts) {
@@ -6184,9 +6136,7 @@ static int touch_lcd_resume(struct device *device)
 #endif
 #else
 #ifdef CUST_G2_TOUCH_WAKEUP_GESTURE
-#if !defined(CONFIG_MACH_MSM8974_G2_OPEN_COM) && !defined(CONFIG_MACH_MSM8974_G2_OPT_AU)
 	if(ts->fw_info.fw_setting.ic_chip_rev == TOUCH_CHIP_REV_A)
-#endif
 #endif
 	touch_power_cntl(ts, ts->pdata->role->resume_pwr);
 #ifdef CUST_G2_TOUCH_WAKEUP_GESTURE

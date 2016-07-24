@@ -105,23 +105,6 @@
 #ifndef IW_AUTH_KEY_MGMT_WAPI_CERT
 #define IW_AUTH_KEY_MGMT_WAPI_CERT 8
 #endif
-
-#ifndef WLAN_AKM_SUITE_WAPI_PSK
-#define WLAN_AKM_SUITE_WAPI_PSK    0x000FAC32
-#endif
-
-#ifndef WLAN_AKM_SUITE_WAPI_CERT
-#define WLAN_AKM_SUITE_WAPI_CERT    0x000FAC38
-#endif
-
-#ifndef NL80211_WAPI_VERSION_1
-#define NL80211_WAPI_VERSION_1 1<<2
-#endif
-
-#ifndef WLAN_CIPHER_SUITE_SMS4
-#define WLAN_CIPHER_SUITE_SMS4    0x000FAC30
-#endif
-
 #endif /* BCMWAPI_WPI */
 
 #ifdef BCMWAPI_WPI
@@ -8081,17 +8064,6 @@ wl_cfg80211_start_ap(
 	if (dev == bcmcfg_to_prmry_ndev(cfg)) {
 		WL_DBG(("Start AP req on primary iface: Softap\n"));
 		dev_role = NL80211_IFTYPE_AP;
-#ifdef CUSTOMER_HW10  // htcheck : softAP crash issue
-               if (!cfg->ap_info) {
-                   if ((cfg->ap_info = kzalloc(sizeof(struct ap_info), GFP_KERNEL))) {
-                        //WL_ERR(("%s: struct ap_info re-allocated\n", __FUNCTION__));
-                    } else {
-                        WL_ERR(("%s: struct ap_info re-allocation failed\n", __FUNCTION__));
-                        err = -ENOMEM;
-                        goto fail;
-                    }
-                }
-#endif
 	}
 #if defined(WL_ENABLE_P2P_IF)
 	else if (dev == cfg->p2p_net) {

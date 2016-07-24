@@ -170,9 +170,6 @@ enum dhd_prealloc_index {
 	DHD_PREALLOC_DHD_WLFC_INFO = 8,
 	DHD_PREALLOC_IF_FLOW_LKUP = 9,
 	DHD_PREALLOC_FLOWRING = 10
-#if defined(CUSTOMER_HW10)
-	,DHD_PREALLOC_DHD_WLFC_HANGER = 11
-#endif
 };
 
 /* Packet alignment for most efficient SDIO (can change based on platform) */

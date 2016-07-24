@@ -10013,7 +10013,7 @@ int __wlan_hdd_cfg80211_scan( struct wiphy *wiphy,
            scanRequest.minChnTime, scanRequest.maxChnTime,
            scanRequest.p2pSearch, scanRequest.skipDfsChnlInP2pSearch);
 
-    // 2014.10.28, Add Scanning Log for Issue Debugging, kuhyun.kwon@lge.com
+    //                                                                      
     hddLog(VOS_TRACE_LEVEL_ERROR, "Scan RequestType:%d, Scan Mode:%d, NumOfChannels:%d,",
         scanRequest.requestType, scanRequest.scanType, scanRequest.ChannelInfo.numOfChannels);
 
@@ -12808,7 +12808,7 @@ static int wlan_hdd_cfg80211_del_station(struct wiphy *wiphy,
                                  param->subtype, &delStaParams);
 
 #else
-    WLANSAP_PopulateDelStaParams(mac, eSIR_MAC_DEAUTH_LEAVING_BSS_REASON,
+    WLANSAP_PopulateDelStaParams(mac, eCsrForcedDeauthSta,
                                  (SIR_MAC_MGMT_DEAUTH >> 4), &delStaParams);
 #endif
     ret = __wlan_hdd_cfg80211_del_station(wiphy, dev, &delStaParams);

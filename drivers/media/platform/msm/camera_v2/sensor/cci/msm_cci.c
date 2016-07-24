@@ -29,13 +29,13 @@
 #define CYCLES_PER_MICRO_SEC 4915
 #define CCI_MAX_DELAY 10000
 
-/*LGE_CHANGE S, i2c timeout increase, 2013-05-23, youngbae.choi@lge.com */
+/*                                                                      */
 #if 1
 #define CCI_TIMEOUT msecs_to_jiffies(300) //timeout 300ms
 #else /* original */
 #define CCI_TIMEOUT msecs_to_jiffies(100)
 #endif
-/*LGE_CHANGE E, i2c timeout increase, 2013-05-23, youngbae.choi@lge.com */
+/*                                                                      */
 
 
 /* TODO move this somewhere else */
@@ -219,21 +219,20 @@ static int32_t msm_cci_data_queue(struct cci_device *cci_dev,
 		return -EINVAL;
 	}
 
-	reg_addr = i2c_cmd->reg_addr;
-	while (cmd_size) {
+    reg_addr = i2c_cmd->reg_addr;
+    while (cmd_size) {
 		CDBG("%s cmd_size %d addr 0x%x data 0x%x\n", __func__,
 			cmd_size, i2c_cmd->reg_addr, i2c_cmd->reg_data);
 		delay = i2c_cmd->delay;
 		data[i++] = CCI_I2C_WRITE_CMD;
 
-		/* in case of multiple command
-		* MSM_CCI_I2C_WRITE : address is not continuous, so update
-		*			address for a new packet.
-		* MSM_CCI_I2C_WRITE_SEQ : address is continuous, need to keep
-		*			the incremented address for a
-		*			new packet */
-		if (c_ctrl->cmd == MSM_CCI_I2C_WRITE)
-			reg_addr = i2c_cmd->reg_addr;
+        /* in case of multiple command
+        MSM_CCI_I2C_WRITE : address is not continuous, so update address
+            for a new packet.
+        MSM_CCI_I2C_WRITE_SEQ : address is continuous, need to keep
+            the incremented address for a new packet */
+        if (c_ctrl->cmd == MSM_CCI_I2C_WRITE)
+            reg_addr = i2c_cmd->reg_addr;
 
 		/* either byte or word addr */
 		if (i2c_msg->addr_type == MSM_CAMERA_I2C_BYTE_ADDR)
@@ -243,24 +242,25 @@ static int32_t msm_cci_data_queue(struct cci_device *cci_dev,
 			data[i++] = reg_addr & 0x00FF;
 		}
 		/* max of 10 data bytes */
-		do {
-			if (i2c_msg->data_type == MSM_CAMERA_I2C_BYTE_DATA) {
-				data[i++] = i2c_cmd->reg_data;
-				reg_addr++;
-			} else {
-				if ((i + 1) <= 10) {
-					data[i++] = (i2c_cmd->reg_data &
-						0xFF00) >> 8; /* MSB */
-					data[i++] = i2c_cmd->reg_data &
-						0x00FF; /* LSB */
-					reg_addr += 2;
-				} else
-					break;
-			}
-			i2c_cmd++;
-			--cmd_size;
-		} while ((c_ctrl->cmd == MSM_CCI_I2C_WRITE_SEQ) &&
-				(cmd_size > 0) && (i <= 10));
+
+        do {
+            if (i2c_msg->data_type == MSM_CAMERA_I2C_BYTE_DATA) {
+                data[i++] = i2c_cmd->reg_data;
+                reg_addr++;
+            } else {
+                if ((i + 1) <= 10) {
+                    data[i++] = (i2c_cmd->reg_data &
+                      0xFF00) >> 8; /* MSB */
+                    data[i++] = i2c_cmd->reg_data &
+                      0x00FF; /* LSB */
+                    reg_addr += 2;
+                } else
+                    break;
+            }
+            i2c_cmd++;
+            --cmd_size;
+        } while ((c_ctrl->cmd == MSM_CCI_I2C_WRITE_SEQ) &&
+          (cmd_size > 0) && (i <= 10));
 
 		data[0] |= ((i-1) << 4);
 		len = ((i-1)/4) + 1;
@@ -810,7 +810,7 @@ static int32_t msm_cci_config(struct v4l2_subdev *sd,
 		rc = msm_cci_i2c_read_bytes(sd, cci_ctrl);
 		break;
 	case MSM_CCI_I2C_WRITE:
-	case MSM_CCI_I2C_WRITE_SEQ:
+    case MSM_CCI_I2C_WRITE_SEQ:
 		rc = msm_cci_i2c_write(sd, cci_ctrl);
 		break;
 	case MSM_CCI_GPIO_WRITE:

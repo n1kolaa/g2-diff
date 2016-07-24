@@ -3,15 +3,21 @@
 
 #ifdef CONFIG_CRYPTO_FIPS
 extern int fips_enabled;
-extern int get_fips_error_state(void);
+extern int fips_panic;
+extern int fips_allow_others;
+extern void set_fips_error(void);
+extern int fips_error(void);
 extern int get_cc_mode_state(void);
 #else
 #define fips_enabled 0
-static inline int get_fips_error_state(void)
+#define fips_panic 0
+#define fips_allow_others 1
+
+static inline void set_fips_error(void)
 {
-	return 0;
+	return;
 }
-static inline int get_cc_mode_state(void)
+static inline int fips_error(void)
 {
 	return 0;
 }
